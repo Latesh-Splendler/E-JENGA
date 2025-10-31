@@ -39,12 +39,16 @@ GITHUB_MODEL_URL = "https://raw.githubusercontent.com/JacobMuli/ai-credit-scorin
 def load_model():
     try:
         if os.path.exists(MODEL_PATH):
+            # Load from local compressed file
             with gzip.open(MODEL_PATH, "rb") as f:
                 model = pickle.load(f)
         else:
+            # Download compressed model from GitHub and decompress before loading
             response = requests.get(GITHUB_MODEL_URL)
             response.raise_for_status()
-            model = pickle.load(io.BytesIO(response.content))
+            compressed_bytes = io.BytesIO(response.content)
+            with gzip.open(compressed_bytes, "rb") as f:
+                model = pickle.load(f)
         return model
     except Exception as e:
         st.error(f"Model load error: {e}")
